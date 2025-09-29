@@ -1,0 +1,1 @@
+link the frontend to the backend properly, also ensure secuirity of both the backend and the frotend create a login page for the admin page and create the secific routes for it
