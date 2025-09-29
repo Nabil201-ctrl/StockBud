@@ -1,24 +1,44 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react'; // Add useContext
 import { Send } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext'; // Import AuthContext
 
-// Send Email Component
 export default function SendEmail() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { token } = useContext(AuthContext); // Get token from context
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setStatus("Sending...");
     
+    if (!token) {
+      setStatus("Authentication required to send email.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('/api/send-email', { // Use /api/send-email
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Include the authorization header
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
       setStatus("Email sent successfully!");
       setMessage("");
-    } catch (err) {
-      setStatus("An error occurred. Please try again later.");
+    } catch (err: any) {
+      console.error('Error sending email:', err);
+      setStatus(`An error occurred: ${err.message || 'Please try again later.'}`);
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +72,7 @@ export default function SendEmail() {
         </div>
         
         <button 
-          type="submit" 
+          type="submit"
           disabled={isLoading || !message.trim()}
           className="relative inline-flex items-center px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none group overflow-hidden"
         >

@@ -1,23 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { UserPlus, Activity } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
-// Users Component
-export default function Users() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
+export default function Users(): JSX.Element {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const { token } = useContext(AuthContext);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUsers = async (): Promise<void> => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const mockUsers = [
-          { _id: '1', name: 'John Doe', email: 'john@example.com', createdAt: new Date('2024-01-15') },
-          { _id: '2', name: 'Jane Smith', email: 'jane@example.com', createdAt: new Date('2024-02-10') },
-          { _id: '3', name: 'Mike Johnson', email: 'mike@example.com', createdAt: new Date('2024-03-05') },
-          { _id: '4', name: 'Sarah Wilson', email: 'sarah@example.com', createdAt: new Date('2024-03-20') }
-        ];
-        setUsers(mockUsers);
+        const response = await fetch('/api/users', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data: User[] = await response.json();
+        setUsers(data);
       } catch (error) {
         console.error('Error fetching users:', error);
       } finally {
@@ -26,7 +42,7 @@ export default function Users() {
     };
 
     fetchUsers();
-  }, []);
+  }, [token]);
 
   if (loading) {
     return (
@@ -73,7 +89,7 @@ export default function Users() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user, index) => (
+              {users.map((user: User, index: number) => (
                 <tr 
                   key={user._id} 
                   className="border-b border-gray-100 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 transform hover:scale-[1.01] hover:shadow-sm"

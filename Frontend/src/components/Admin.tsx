@@ -1,17 +1,25 @@
-import { useState } from 'react';
-import { Users as UsersIcon, Mail, Menu, X } from 'lucide-react';
-import Users from './Users';
-import SendEmail from './SendEmail';
+import { useState, useContext } from 'react'; // Add useContext
+import { Users, Mail, Menu, X } from 'lucide-react';
+import UsersComponent from './Users';
+import SendEmailComponent from './SendEmail';
+import { AuthContext } from '../context/AuthContext'; // Import AuthContext
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
-// Main Admin Component
 export default function Admin() {
   const [activeTab, setActiveTab] = useState('users');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, logout, isAuthenticated, isAdmin } = useContext(AuthContext); // Consume AuthContext
+  const navigate = useNavigate();
 
   const tabs = [
-    { id: 'users', label: 'Users', icon: UsersIcon },
+    { id: 'users', label: 'Users', icon: Users },
     { id: 'send-email', label: 'Send Email', icon: Mail }
   ];
+
+  const handleLogout = () => {
+    logout();
+    navigate('/admin/login');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -41,6 +49,20 @@ export default function Admin() {
               <X className="w-5 h-5" />
             </button>
           </div>
+
+          {/* User Info and Logout */}
+          {user && (
+            <div className="p-6 border-b border-gray-200/50 text-center">
+              <p className="font-semibold text-gray-800">{user.name}</p>
+              <p className="text-sm text-gray-600">{user.email}</p>
+              <button
+                onClick={handleLogout}
+                className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+              >
+                Logout
+              </button>
+            </div>
+          )}
 
           {/* Navigation */}
           <nav className="p-6">
@@ -99,14 +121,23 @@ export default function Admin() {
             <div className="max-w-7xl mx-auto">
               <div className="bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/50 p-8 min-h-[calc(100vh-12rem)]">
                 <div className="animate-fade-in">
-                  {activeTab === 'users' && <Users />}
-                  {activeTab === 'send-email' && <SendEmail />}
+                  {activeTab === 'users' && <UsersComponent />}
+                  {activeTab === 'send-email' && <SendEmailComponent />}
                 </div>
               </div>
             </div>
           </main>
         </div>
       </div>
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+      `}</style>
     </div>
   );
 }

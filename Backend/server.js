@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const connectDB = require('./config/database');
 const dataRoutes = require('./routes/dataRoutes');
 
+// ADD THIS LINE - Load environment variables
+require('dotenv').config();
+
 const app = express();
 
 // Connect to database
