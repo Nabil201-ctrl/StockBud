@@ -1,5 +1,6 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useCallback, useMemo } from 'react';
 
+// --- Type Definition ---
 interface TimeLeft {
   days: number;
   hours: number;
@@ -7,308 +8,253 @@ interface TimeLeft {
   seconds: number;
 }
 
-export default function Waitlist(): JSX.Element {
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ 
-    days: 0, 
-    hours: 0, 
-    minutes: 0, 
-    seconds: 0 
-  });
-  const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
+// --- Utility Function for Countdown Logic ---
+// Memoize the target date to prevent unnecessary re-creations
+const TARGET_DATE = new Date("2026-01-01T00:00:00Z").getTime();
 
-  // Countdown target (example: Jan 1, 2026)
-  const targetDate = new Date("2026-01-01T00:00:00Z").getTime();
+const calculateTimeLeft = (targetDate: number): TimeLeft => {
+  const now = new Date().getTime();
+  const distance = targetDate - now;
 
+  if (distance <= 0) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }
+
+  return {
+    days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((distance / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((distance / (1000 * 60)) % 60),
+    seconds: Math.floor((distance / 1000) % 60),
+  };
+};
+
+export default function StockBudLanding(): JSX.Element {
+  // --- State Hooks ---
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [submissionStatus, setSubmissionStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft(TARGET_DATE));
+
+  // --- Countdown Effect ---
   useEffect(() => {
+    setTimeLeft(calculateTimeLeft(TARGET_DATE)); // Initial render calculation
     const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-
-      if (distance > 0) {
-        setTimeLeft({
-          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((distance / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((distance / (1000 * 60)) % 60),
-          seconds: Math.floor((distance / 1000) % 60),
-        });
-      }
+      setTimeLeft(calculateTimeLeft(TARGET_DATE));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [targetDate]);
+  }, []);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+  // --- Form Submission Handler (useCallback for better memoization) ---
+  const handleSubmit = useCallback(async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
-    
-    if (email && email.includes('@')) {
-      try {
-        const response = await fetch('/api/signup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ name, email }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          setMessage("Thank you for joining the waitlist!");
-          setName("");
-          setEmail("");
-        } else {
-          setError(data.message || "An error occurred.");
-        }
-      } catch {
-        setError("An error occurred. Please try again later.");
-      }
+    if (!email || !email.includes("@")) {
+      setStatusMessage("Please enter a valid email address.");
+      setSubmissionStatus("error");
+      return;
     }
+
+    setSubmissionStatus("loading");
+    setStatusMessage("Joining waitlist...");
+
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setSubmissionStatus("success");
+        setStatusMessage("You’re on the waitlist! We'll be in touch. 🎉");
+        setName("");
+        setEmail("");
+      } else {
+        setSubmissionStatus("error");
+        setStatusMessage(data.message || "Oops! Something went wrong on the server.");
+      }
+    } catch {
+      setSubmissionStatus("error");
+      setStatusMessage("Network error. Please try again later.");
+    }
+  }, [name, email]);
+
+  // --- Render Helpers (for cleaner JSX) ---
+  const countdownItems = useMemo(() => [
+    { label: "Days", value: timeLeft.days },
+    { label: "Hours", value: timeLeft.hours },
+    { label: "Minutes", value: timeLeft.minutes },
+    { label: "Seconds", value: timeLeft.seconds }
+  ], [timeLeft]);
+
+  const featureList = [
+    {
+      icon: "⚡️",
+      title: "Real-Time Sync",
+      desc: "Instantaneous, accurate stock counts synced directly with your Shopify store. No more delays or manual refreshes.",
+    },
+    {
+      icon: "🧠",
+      title: "Predictive AI Forecasting",
+      desc: "Stop guessing. Our AI predicts optimal restock points to eliminate costly stockouts and overstocking.",
+    },
+    {
+      icon: "🔗",
+      title: "Zero-Friction Integration",
+      desc: "Install in minutes, not hours. A beautiful, intuitive dashboard built specifically for Shopify merchants.",
+    },
+  ];
+
+  const testimonial = {
+      quote: " Let StockBud do the analysis you do the spending",
+      author: "Uche Stephen"
   };
 
-  const VideoModal = (): JSX.Element => (
-    <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
-      <div className="relative max-w-4xl w-full">
-        <button
-          onClick={() => setShowVideoModal(false)}
-          className="absolute -top-12 right-0 text-white hover:text-lime-400 text-2xl transition-colors"
-        >
-          ✕
-        </button>
-        <div className="aspect-video bg-gray-900 rounded-xl flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="text-6xl mb-4">▶</div>
-            <p className="text-lg mb-2">Video would be embedded here</p>
-            <p className="text-sm text-gray-400">(YouTube/Vimeo player)</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-black via-gray-900 to-black text-white">
-      {/* Animated Wave Background */}
-      <div className="absolute inset-0 opacity-20">
-        {/* Wave 1 */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(45deg, transparent 30%, rgba(204,255,0,0.1) 50%, transparent 70%)`,
-            animation: 'wave1 8s ease-in-out infinite alternate'
-          }}
-        />
-        
-        {/* Wave 2 */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(-45deg, transparent 40%, rgba(204,255,0,0.05) 60%, transparent 80%)`,
-            animation: 'wave2 10s ease-in-out infinite alternate-reverse'
-          }}
-        />
-        
-        {/* Wave 3 */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse at 30% 70%, rgba(204,255,0,0.1) 0%, transparent 50%)`,
-            animation: 'wave3 12s ease-in-out infinite'
-          }}
-        />
-        
-        {/* Floating particles */}
-        <div className="absolute inset-0">
-          {[...Array(15)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-lime-400 rounded-full opacity-30"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${3 + Math.random() * 4}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 2}s`
-              }}
+    <div className="min-h-screen bg-gray-950 text-white relative overflow-hidden font-sans">
+      {/* Increased visual interest with subtle background elements */}
+      <div className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 bg-lime-500/10 rounded-full blur-[150px] animate-slow-pulse opacity-50" />
+      <div className="absolute -bottom-1/4 -right-1/4 w-2/3 h-2/3 bg-emerald-400/10 rounded-full blur-[180px] animate-slow-bounce opacity-40" />
+
+      {/* Header */}
+      <header className="relative z-20 flex justify-between items-center px-6 py-6 md:px-16 border-b border-gray-800/50">
+        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-lime-300 to-emerald-400 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
+          StockBud
+        </h1>
+        <span className="text-sm text-lime-400/80 font-medium border border-lime-400/30 px-3 py-1 rounded-full backdrop-blur-sm">
+          Launching Q1 2026 🚀
+        </span>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative z-10 flex flex-col items-center text-center px-6 py-24 space-y-8 md:py-32">
+        <p className="text-sm font-semibold uppercase tracking-widest text-lime-400 mb-2 animate-fadeIn delay-100">
+            The AI-Powered Inventory System
+        </p>
+        <h2 className="text-5xl sm:text-7xl font-extrabold leading-snug max-w-4xl bg-gradient-to-r from-white to-lime-200 bg-clip-text text-transparent animate-fadeIn delay-200">
+          Never Miss a Sale. Never Overstock.
+        </h2>
+        <p className="max-w-3xl text-xl text-gray-300 animate-fadeIn delay-300">
+          **StockBud** is the smarter way to manage Shopify inventory, giving you real-time tracking, predictive restocking, and AI-powered insights to maximize profit.
+        </p>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 w-full max-w-3xl mt-12 p-2 bg-gray-900/50 rounded-2xl border border-gray-800 backdrop-blur-sm animate-slideUp delay-400">
+            <input
+                type="text"
+                placeholder="Your Name (e.g., Alex)"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="flex-1 px-5 py-4 rounded-xl bg-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-lime-400 focus:outline-none border border-gray-700 transition duration-300"
+                disabled={submissionStatus === "loading"}
             />
+            <input
+                type="email"
+                placeholder="example@gmail.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="flex-1 px-5 py-4 rounded-xl bg-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-lime-400 focus:outline-none border border-gray-700 transition duration-300"
+                disabled={submissionStatus === "loading"}
+            />
+            <button
+                type="submit"
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 font-bold text-gray-900 shadow-lg shadow-lime-500/30 hover:shadow-lime-400/50 hover:bg-gradient-to-l transition duration-300 transform hover:scale-[1.02] disabled:opacity-50 flex items-center justify-center"
+                disabled={submissionStatus === "loading"}
+            >
+                {submissionStatus === "loading" ? (
+                    <svg className="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                ) : (
+                    'Secure Your Spot'
+                )}
+            </button>
+        </form>
+        {statusMessage && (
+            <p className={`text-sm mt-4 font-medium ${submissionStatus === "error" ? "text-red-400" : "text-lime-400"}`}>
+                {statusMessage}
+            </p>
+        )}
+
+        {/* Testimonial / Social Proof */}
+        <div className="mt-12 max-w-2xl p-4 border-l-4 border-lime-500 bg-gray-800/30 rounded-r-lg shadow-xl animate-fadeIn delay-500">
+            <p className="italic text-gray-200">
+                "{testimonial.quote}"
+            </p>
+            <p className="text-sm font-semibold text-lime-400 mt-2">— {testimonial.author}</p>
+        </div>
+
+      </section>
+
+      {/* --- Horizontal Rule Separator --- */}
+      <hr className="w-4/5 mx-auto border-gray-800" />
+
+      {/* Countdown Timer */}
+      <section className="relative z-10 text-center px-6 py-12">
+        <p className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-6">
+            LAUNCHING SOON
+        </p>
+        <div className="grid grid-cols-4 gap-6 max-w-xl mx-auto">
+          {countdownItems.map((item, i) => (
+            <div key={i} className="p-5 rounded-2xl bg-gray-800/70 border border-gray-700 backdrop-blur-sm text-center shadow-2xl transition duration-500 hover:border-lime-500/50">
+              <p className="text-4xl md:text-5xl font-extrabold text-lime-400 tabular-nums">
+                  {String(item.value).padStart(2, '0')}
+              </p>
+              <span className="text-xs text-gray-400 uppercase tracking-widest mt-1 block">{item.label}</span>
+            </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Main Content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-2xl text-center space-y-8">
-          {/* Badge */}
-          <div className="inline-block">
-            <span className="bg-lime-400/20 text-lime-400 text-sm px-4 py-2 rounded-full font-medium border border-lime-400/30 backdrop-blur-sm shadow-[0_0_15px_rgba(204,255,0,0.3)]">
-              AVAILABLE IN EARLY 2026
-            </span>
-          </div>
+      {/* --- Horizontal Rule Separator --- */}
+      <hr className="w-4/5 mx-auto border-gray-800" />
 
-          {/* Logo placeholder */}
-          <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-lime-400 to-lime-300 flex items-center justify-center text-black font-bold text-2xl shadow-[0_0_25px_rgba(204,255,0,0.4)] hover:shadow-[0_0_35px_rgba(204,255,0,0.6)] transition-all duration-300 transform hover:scale-105">
-            W
-          </div>
-
-          {/* Headings */}
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-lime-100 to-white bg-clip-text text-transparent">
-              Get early access
-            </h1>
-            <p className="text-gray-300 text-lg max-w-lg mx-auto leading-relaxed">
-              Be amongst the first to experience Wait and launch a viral waitlist. 
-              Sign up to be notified when we launch!
-            </p>
-          </div>
-
-          {/* Email form */}
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto"
-          >
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-              required
-              className="px-5 py-4 rounded-xl bg-gray-800/80 backdrop-blur-sm text-white border border-gray-600 placeholder-gray-400 w-full sm:flex-1 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-lime-400 transition-all duration-300"
-            />
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-              required
-              className="px-5 py-4 rounded-xl bg-gray-800/80 backdrop-blur-sm text-white border border-gray-600 placeholder-gray-400 w-full sm:flex-1 focus:outline-none focus:ring-2 focus:ring-lime-400 focus:border-lime-400 transition-all duration-300"
-            />
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-lime-400 to-lime-300 text-black font-bold px-8 py-4 rounded-xl hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] transition-all duration-300 transform hover:scale-105 whitespace-nowrap"
-            >
-              Join waitlist
-            </button>
-          </form>
-          {message && <p className="text-lime-400">{message}</p>}
-          {error && <p className="text-red-500">{error}</p>}
-
-          {/* Avatars + count */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex -space-x-3">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-12 h-12 rounded-full border-3 border-black bg-gradient-to-br from-gray-600 to-gray-800 shadow-lg hover:scale-110 transition-transform duration-200"
-                  style={{
-                    backgroundImage: `linear-gradient(135deg, hsl(${i * 60}, 70%, 60%) 0%, hsl(${i * 60 + 40}, 60%, 40%) 100%)`
-                  }}
-                />
-              ))}
+      {/* Features */}
+      <section className="relative z-10 px-6 py-20 md:px-16">
+          <h3 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-lime-300 to-emerald-400">
+              Transform Your Inventory Workflow
+          </h3>
+        <div className="grid md:grid-cols-3 gap-12 text-center max-w-6xl mx-auto">
+          {featureList.map((f, i) => (
+            <div key={i} className="p-10 rounded-3xl bg-gray-900/50 border border-gray-800 backdrop-blur-sm hover:border-lime-500 transition duration-500 shadow-xl hover:shadow-lime-900/30">
+                <span className="text-4xl block mb-4">{f.icon}</span>
+              <h4 className="text-2xl font-semibold text-lime-300 mb-3">{f.title}</h4>
+              <p className="text-gray-400 text-base">{f.desc}</p>
             </div>
-            <p className="text-gray-300 font-medium">Join 12,500+ others on the waitlist</p>
-          </div>
-
-          {/* Countdown */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-4 max-w-md mx-auto">
-              {[
-                { value: timeLeft.days, label: 'Days' },
-                { value: timeLeft.hours, label: 'Hours' },
-                { value: timeLeft.minutes, label: 'Minutes' },
-                { value: timeLeft.seconds, label: 'Seconds' }
-              ].map((item, i) => (
-                <div key={i} className="text-center bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50">
-                  <p className="text-2xl md:text-3xl font-bold text-lime-400 mb-1" style={{
-                    textShadow: '0 0 10px rgba(204,255,0,0.5)'
-                  }}>
-                    {item.value}
-                  </p>
-                  <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">
-                    {item.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">
-              LEFT UNTIL FULL RELEASE
-            </p>
-          </div>
-
-          {/* Video section */}
-          <div className="relative max-w-lg mx-auto">
-            <button
-              onClick={() => setShowVideoModal(true)}
-              className="group relative w-full"
-              type="button"
-            >
-              <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center border border-gray-700 group-hover:border-lime-400/50 transition-all duration-300 overflow-hidden">
-                {/* Video thumbnail background pattern */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="w-full h-full bg-gradient-to-br from-lime-400/20 to-transparent" />
-                </div>
-                
-                {/* Play button */}
-                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-lime-400 to-lime-300 text-black flex items-center justify-center text-2xl group-hover:shadow-[0_0_30px_rgba(204,255,0,0.7)] transition-all duration-300 transform group-hover:scale-110">
-                  <span className="ml-1">▶</span>
-                </div>
-              </div>
-              <p className="mt-3 text-gray-300 group-hover:text-lime-400 transition-colors duration-200 font-medium">
-                See how Wait works (3m)
-              </p>
-            </button>
-          </div>
+          ))}
         </div>
-      </div>
+        {/* Secondary CTA */}
+        <div className="text-center mt-20">
+            <a href="#hero-form" className="inline-block px-10 py-4 rounded-xl text-lg bg-gradient-to-r from-lime-500 to-emerald-500 font-bold text-gray-900 shadow-2xl shadow-lime-500/40 hover:scale-105 transition duration-300 transform">
+                Ready to Stop Guessing? Join the Waitlist Today!
+            </a>
+        </div>
+      </section>
 
-      {/* Video Modal */}
-      {showVideoModal && <VideoModal />}
+      {/* Footer */}
+      <footer className="relative z-10 text-center py-8 text-gray-500 text-sm border-t border-gray-800 mt-10">
+        © {new Date().getFullYear()} StockBud. Built for the modern Shopify seller.
+      </footer>
 
-      {/* CSS Animations */}
+      {/* Enhanced Styles */}
       <style jsx>{`
-        @keyframes wave1 {
-          0%, 100% { 
-            transform: translateX(-50%) translateY(-50%) rotate(0deg) scale(1);
-          }
-          50% { 
-            transform: translateX(-30%) translateY(-30%) rotate(5deg) scale(1.1);
-          }
-        }
-        
-        @keyframes wave2 {
-          0%, 100% { 
-            transform: translateX(30%) translateY(30%) rotate(-10deg) scale(0.9);
-          }
-          50% { 
-            transform: translateX(50%) translateY(50%) rotate(-5deg) scale(1.2);
-          }
-        }
-        
-        @keyframes wave3 {
-          0%, 100% { 
-            transform: scale(1) rotate(0deg);
-          }
-          33% { 
-            transform: scale(1.1) rotate(2deg);
-          }
-          66% { 
-            transform: scale(0.9) rotate(-1deg);
-          }
-        }
-        
-        @keyframes float {
-          0%, 100% { 
-            transform: translateY(0px) rotate(0deg);
-            opacity: 0.3;
-          }
-          50% { 
-            transform: translateY(-20px) rotate(180deg);
-            opacity: 0.8;
-          }
-        }
+        @keyframes fadeIn { from {opacity: 0; transform: translateY(30px);} to {opacity: 1; transform: translateY(0);} }
+        @keyframes slideUp { from {opacity: 0; transform: translateY(50px);} to {opacity: 1; transform: translateY(0);} }
+        @keyframes slow-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes slow-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+
+        .animate-fadeIn { animation: fadeIn 1s ease forwards; opacity: 0; }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+        .animate-slideUp { animation: slideUp 1.2s ease forwards; opacity: 0; }
+        .animate-slow-pulse { animation: slow-pulse 10s infinite ease-in-out; }
+        .animate-slow-bounce { animation: slow-bounce 15s infinite ease-in-out; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
       `}</style>
     </div>
   );
