@@ -68,7 +68,7 @@ export default function StockBudLanding(): JSX.Element {
       const data = await response.json();
       if (response.ok) {
         setSubmissionStatus("success");
-        setStatusMessage("You’re on the waitlist! We'll be in touch. 🎉");
+        setStatusMessage("You're on the waitlist! We'll be in touch. 🎉");
         setName("");
         setEmail("");
       } else {
@@ -113,42 +113,42 @@ export default function StockBudLanding(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white relative overflow-hidden font-sans">
-      {/* Increased visual interest with subtle background elements */}
-      <div className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 bg-lime-500/10 rounded-full blur-[150px] animate-slow-pulse opacity-50" />
-      <div className="absolute -bottom-1/4 -right-1/4 w-2/3 h-2/3 bg-emerald-400/10 rounded-full blur-[180px] animate-slow-bounce opacity-40" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-gray-900 relative overflow-hidden font-sans">
+      {/* Background elements with new color scheme */}
+      <div className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 bg-indigo-500/10 rounded-full blur-[150px] animate-slow-pulse opacity-50" />
+      <div className="absolute -bottom-1/4 -right-1/4 w-2/3 h-2/3 bg-purple-400/10 rounded-full blur-[180px] animate-slow-bounce opacity-40" />
 
       {/* Header */}
-      <header className="relative z-20 flex justify-between items-center px-6 py-6 md:px-16 border-b border-gray-800/50">
-        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-lime-300 to-emerald-400 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
+      <header className="relative z-20 flex justify-between items-center px-6 py-6 md:px-16 border-b border-gray-200/50">
+        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
           StockBud
         </h1>
-        <span className="text-sm text-lime-400/80 font-medium border border-lime-400/30 px-3 py-1 rounded-full backdrop-blur-sm">
+        <span className="text-sm text-indigo-600/80 font-medium border border-indigo-400/30 px-3 py-1 rounded-full backdrop-blur-sm bg-white/50">
           Launching Q1 2026 🚀
         </span>
       </header>
 
       {/* Hero Section */}
       <section className="relative z-10 flex flex-col items-center text-center px-6 py-24 space-y-8 md:py-32">
-        <p className="text-sm font-semibold uppercase tracking-widest text-lime-400 mb-2 animate-fadeIn delay-100">
+        <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-2 animate-fadeIn delay-100">
             The AI-Powered Inventory System
         </p>
-        <h2 className="text-5xl sm:text-7xl font-extrabold leading-snug max-w-4xl bg-gradient-to-r from-white to-lime-200 bg-clip-text text-transparent animate-fadeIn delay-200">
+        <h2 className="text-5xl sm:text-7xl font-extrabold leading-snug max-w-4xl bg-gradient-to-r from-gray-900 to-indigo-700 bg-clip-text text-transparent animate-fadeIn delay-200">
           Never Miss a Sale. Never Overstock.
         </h2>
-        <p className="max-w-3xl text-xl text-gray-300 animate-fadeIn delay-300">
+        <p className="max-w-3xl text-xl text-gray-700 animate-fadeIn delay-300">
           **StockBud** is the smarter way to manage Shopify inventory, giving you real-time tracking, predictive restocking, and AI-powered insights to maximize profit.
         </p>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 w-full max-w-3xl mt-12 p-2 bg-gray-900/50 rounded-2xl border border-gray-800 backdrop-blur-sm animate-slideUp delay-400">
+        <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 w-full max-w-3xl mt-12 p-2 bg-white/70 rounded-2xl border border-gray-200/50 backdrop-blur-sm animate-slideUp delay-400">
             <input
                 type="text"
                 placeholder="Your Name (e.g., Alex)"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="flex-1 px-5 py-4 rounded-xl bg-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-lime-400 focus:outline-none border border-gray-700 transition duration-300"
+                className="flex-1 px-5 py-4 rounded-xl bg-white/80 placeholder-gray-500 focus:ring-2 focus:ring-indigo-400 focus:outline-none border border-gray-300 transition duration-300"
                 disabled={submissionStatus === "loading"}
             />
             <input
@@ -157,84 +157,84 @@ export default function StockBudLanding(): JSX.Element {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="flex-1 px-5 py-4 rounded-xl bg-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-lime-400 focus:outline-none border border-gray-700 transition duration-300"
+                className="flex-1 px-5 py-4 rounded-xl bg-white/80 placeholder-gray-500 focus:ring-2 focus:ring-indigo-400 focus:outline-none border border-gray-300 transition duration-300"
                 disabled={submissionStatus === "loading"}
             />
             <button
                 type="submit"
-                className="px-8 py-4 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 font-bold text-gray-900 shadow-lg shadow-lime-500/30 hover:shadow-lime-400/50 hover:bg-gradient-to-l transition duration-300 transform hover:scale-[1.02] disabled:opacity-50 flex items-center justify-center"
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-400/50 hover:bg-gradient-to-l transition duration-300 transform hover:scale-[1.02] disabled:opacity-50 flex items-center justify-center"
                 disabled={submissionStatus === "loading"}
             >
                 {submissionStatus === "loading" ? (
-                    <svg className="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 ) : (
                     'Secure Your Spot'
                 )}
             </button>
         </form>
         {statusMessage && (
-            <p className={`text-sm mt-4 font-medium ${submissionStatus === "error" ? "text-red-400" : "text-lime-400"}`}>
+            <p className={`text-sm mt-4 font-medium ${submissionStatus === "error" ? "text-red-600" : "text-indigo-600"}`}>
                 {statusMessage}
             </p>
         )}
 
         {/* Testimonial / Social Proof */}
-        <div className="mt-12 max-w-2xl p-4 border-l-4 border-lime-500 bg-gray-800/30 rounded-r-lg shadow-xl animate-fadeIn delay-500">
-            <p className="italic text-gray-200">
+        <div className="mt-12 max-w-2xl p-4 border-l-4 border-indigo-500 bg-white/50 rounded-r-lg shadow-xl animate-fadeIn delay-500">
+            <p className="italic text-gray-700">
                 "{testimonial.quote}"
             </p>
-            <p className="text-sm font-semibold text-lime-400 mt-2">— {testimonial.author}</p>
+            <p className="text-sm font-semibold text-indigo-600 mt-2">— {testimonial.author}</p>
         </div>
 
       </section>
 
       {/* --- Horizontal Rule Separator --- */}
-      <hr className="w-4/5 mx-auto border-gray-800" />
+      <hr className="w-4/5 mx-auto border-gray-300" />
 
       {/* Countdown Timer */}
       <section className="relative z-10 text-center px-6 py-12">
-        <p className="text-sm font-semibold uppercase tracking-widest text-gray-400 mb-6">
+        <p className="text-sm font-semibold uppercase tracking-widest text-gray-600 mb-6">
             LAUNCHING SOON
         </p>
         <div className="grid grid-cols-4 gap-6 max-w-xl mx-auto">
           {countdownItems.map((item, i) => (
-            <div key={i} className="p-5 rounded-2xl bg-gray-800/70 border border-gray-700 backdrop-blur-sm text-center shadow-2xl transition duration-500 hover:border-lime-500/50">
-              <p className="text-4xl md:text-5xl font-extrabold text-lime-400 tabular-nums">
+            <div key={i} className="p-5 rounded-2xl bg-white/70 border border-gray-300 backdrop-blur-sm text-center shadow-2xl transition duration-500 hover:border-indigo-500/50">
+              <p className="text-4xl md:text-5xl font-extrabold text-indigo-600 tabular-nums">
                   {String(item.value).padStart(2, '0')}
               </p>
-              <span className="text-xs text-gray-400 uppercase tracking-widest mt-1 block">{item.label}</span>
+              <span className="text-xs text-gray-600 uppercase tracking-widest mt-1 block">{item.label}</span>
             </div>
           ))}
         </div>
       </section>
 
       {/* --- Horizontal Rule Separator --- */}
-      <hr className="w-4/5 mx-auto border-gray-800" />
+      <hr className="w-4/5 mx-auto border-gray-300" />
 
       {/* Features */}
       <section className="relative z-10 px-6 py-20 md:px-16">
-          <h3 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-lime-300 to-emerald-400">
+          <h3 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
               Transform Your Inventory Workflow
           </h3>
         <div className="grid md:grid-cols-3 gap-12 text-center max-w-6xl mx-auto">
           {featureList.map((f, i) => (
-            <div key={i} className="p-10 rounded-3xl bg-gray-900/50 border border-gray-800 backdrop-blur-sm hover:border-lime-500 transition duration-500 shadow-xl hover:shadow-lime-900/30">
+            <div key={i} className="p-10 rounded-3xl bg-white/70 border border-gray-300 backdrop-blur-sm hover:border-indigo-500 transition duration-500 shadow-xl hover:shadow-indigo-900/30">
                 <span className="text-4xl block mb-4">{f.icon}</span>
-              <h4 className="text-2xl font-semibold text-lime-300 mb-3">{f.title}</h4>
-              <p className="text-gray-400 text-base">{f.desc}</p>
+              <h4 className="text-2xl font-semibold text-indigo-700 mb-3">{f.title}</h4>
+              <p className="text-gray-600 text-base">{f.desc}</p>
             </div>
           ))}
         </div>
         {/* Secondary CTA */}
         <div className="text-center mt-20">
-            <a href="#hero-form" className="inline-block px-10 py-4 rounded-xl text-lg bg-gradient-to-r from-lime-500 to-emerald-500 font-bold text-gray-900 shadow-2xl shadow-lime-500/40 hover:scale-105 transition duration-300 transform">
+            <a href="#hero-form" className="inline-block px-10 py-4 rounded-xl text-lg bg-gradient-to-r from-indigo-600 to-purple-600 font-bold text-white shadow-2xl shadow-indigo-500/40 hover:scale-105 transition duration-300 transform">
                 Ready to Stop Guessing? Join the Waitlist Today!
             </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 text-center py-8 text-gray-500 text-sm border-t border-gray-800 mt-10">
+      <footer className="relative z-10 text-center py-8 text-gray-600 text-sm border-t border-gray-300 mt-10">
         © {new Date().getFullYear()} StockBud. Built for the modern Shopify seller.
       </footer>
 
