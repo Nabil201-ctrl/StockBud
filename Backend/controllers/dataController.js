@@ -192,3 +192,7 @@ exports.googleAuth = async (req, res) => {
         res.status(500).json({ message: 'Authentication failed: ' + error.message });
     }
 };
+
+exports.getTimer = (req, res) => {
+    res.status(200).json({ timer: 5 * 60 });
+};

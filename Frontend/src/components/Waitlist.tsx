@@ -9,9 +9,6 @@ interface TimeLeft {
 }
 
 // --- Utility Function for Countdown Logic ---
-// Memoize the target date to prevent unnecessary re-creations
-const TARGET_DATE = new Date("2026-01-01T00:00:00Z").getTime();
-
 const calculateTimeLeft = (targetDate: number): TimeLeft => {
   const now = new Date().getTime();
   const distance = targetDate - now;
@@ -34,17 +31,35 @@ export default function StockBudLanding(): JSX.Element {
   const [email, setEmail] = useState("");
   const [submissionStatus, setSubmissionStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [statusMessage, setStatusMessage] = useState("");
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft(TARGET_DATE));
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [targetDate, setTargetDate] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchTimer = async () => {
+      try {
+        const response = await fetch("/api/timer");
+        const data = await response.json();
+        setTargetDate(new Date().getTime() + data.timer * 1000);
+      } catch (error) {
+        console.error("Error fetching timer:", error);
+        // Fallback to a default date if the backend is not available
+        setTargetDate(new Date("2026-01-01T00:00:00Z").getTime());
+      }
+    };
+
+    fetchTimer();
+  }, []);
 
   // --- Countdown Effect ---
   useEffect(() => {
-    setTimeLeft(calculateTimeLeft(TARGET_DATE)); // Initial render calculation
+    if (!targetDate) return;
+
     const interval = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(TARGET_DATE));
+      setTimeLeft(calculateTimeLeft(targetDate));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [targetDate]);
 
   // --- Form Submission Handler (useCallback for better memoization) ---
   const handleSubmit = useCallback(async (e: FormEvent) => {
@@ -93,7 +108,7 @@ export default function StockBudLanding(): JSX.Element {
     {
       icon: "⚡️",
       title: "Real-Time Sync",
-      desc: "Instantaneous, accurate stock counts synced directly with your Shopify store. No more delays or manual refreshes.",
+      desc: "Instantaneous, accurate stock counts synced directly with your  store. No more delays or manual refreshes.",
     },
     {
       icon: "🧠",
@@ -103,7 +118,7 @@ export default function StockBudLanding(): JSX.Element {
     {
       icon: "🔗",
       title: "Zero-Friction Integration",
-      desc: "Install in minutes, not hours. A beautiful, intuitive dashboard built specifically for Shopify merchants.",
+      desc: "Install in minutes, not hours. A beautiful, intuitive dashboard built for All merchants.",
     },
   ];
 
@@ -137,7 +152,7 @@ export default function StockBudLanding(): JSX.Element {
           Never Miss a Sale. Never Overstock.
         </h2>
         <p className="max-w-3xl text-xl text-gray-700 animate-fadeIn delay-300">
-          **StockBud** is the smarter way to manage Shopify inventory, giving you real-time tracking, predictive restocking, and AI-powered insights to maximize profit.
+          **StockBud** is the smarter way to manage to manage inventory offline and online, giving you real-time tracking, predictive restocking, and AI-powered insights to maximize profit.
         </p>
 
         {/* Form */}
@@ -235,7 +250,7 @@ export default function StockBudLanding(): JSX.Element {
 
       {/* Footer */}
       <footer className="relative z-10 text-center py-8 text-gray-600 text-sm border-t border-gray-300 mt-10">
-        © {new Date().getFullYear()} StockBud. Built for the modern Shopify seller.
+        © {new Date().getFullYear()} StockBud. Built for ecommerce everywhere seller.
       </footer>
 
       {/* Enhanced Styles */}
