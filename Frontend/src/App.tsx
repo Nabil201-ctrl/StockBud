@@ -32,7 +32,6 @@ function App() {
             <Admin />
           </ProtectedRoute>
         } />
-        {/* Add other routes here */}
         <Route path="*" element={<NotFound />} /> {/* Catch-all for 404 */}
       </Routes>
     </Router>

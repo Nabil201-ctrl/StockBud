@@ -139,7 +139,7 @@ export default function StockBudLanding(): JSX.Element {
           StockBud
         </h1>
         <span className="text-sm text-indigo-600/80 font-medium border border-indigo-400/30 px-3 py-1 rounded-full backdrop-blur-sm bg-white/50">
-          Launching Q1 2026 🚀
+          Launching 2026 🚀
         </span>
       </header>
 
@@ -152,7 +152,7 @@ export default function StockBudLanding(): JSX.Element {
           Never Miss a Sale. Never Overstock.
         </h2>
         <p className="max-w-3xl text-xl text-gray-700 animate-fadeIn delay-300">
-          **StockBud** is the smarter way to manage to manage inventory offline and online, giving you real-time tracking, predictive restocking, and AI-powered insights to maximize profit.
+          **StockBud** is the smarter way to manage inventory offline and online, giving you real-time tracking, predictive restocking, and AI-powered insights to maximize profit.
         </p>
 
         {/* Form */}
@@ -250,7 +250,7 @@ export default function StockBudLanding(): JSX.Element {
 
       {/* Footer */}
       <footer className="relative z-10 text-center py-8 text-gray-600 text-sm border-t border-gray-300 mt-10">
-        © {new Date().getFullYear()} StockBud. Built for ecommerce everywhere seller.
+        © {new Date().getFullYear()} StockBud. Built for commerce everywhere.
       </footer>
 
       {/* Enhanced Styles */}
