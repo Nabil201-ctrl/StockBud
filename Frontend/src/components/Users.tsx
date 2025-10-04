@@ -6,7 +6,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  createdAt: string;
+  createdAt?: string; // Make this optional
 }
 
 export default function Users(): JSX.Element {
@@ -43,6 +43,21 @@ export default function Users(): JSX.Element {
 
     fetchUsers();
   }, [token]);
+
+  // Helper function to format date safely
+  const formatDate = (dateString?: string): string => {
+    if (!dateString) return 'Not Available';
+    
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch (error) {
+      return 'Invalid Date';
+    }
+  };
 
   if (loading) {
     return (
@@ -105,11 +120,7 @@ export default function Users(): JSX.Element {
                   </td>
                   <td className="py-4 px-6 text-gray-600">{user.email}</td>
                   <td className="py-4 px-6 text-gray-600">
-                    {new Date(user.createdAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
+                    {formatDate(user.createdAt)}
                   </td>
                   <td className="py-4 px-6">
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 animate-pulse">
