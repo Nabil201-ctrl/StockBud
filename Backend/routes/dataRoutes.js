@@ -10,4 +10,7 @@ router.post('/send-email', authMiddleware, adminMiddleware, dataController.sendE
 router.post('/auth/google', dataController.googleAuth);
 router.get('/timer', dataController.getTimer);
 
+//SignUp Route
+router.post('/signup', dataController.signup);
+
 module.exports = router;
