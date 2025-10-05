@@ -123,7 +123,7 @@ export default function StockBudLanding(): JSX.Element {
   ];
 
   const testimonial = {
-      quote: " Let StockBud do the analysis you do the spending",
+      quote: "StockBud is the future of commerce everywhere",
       author: "Uche Stephen"
   };
 
