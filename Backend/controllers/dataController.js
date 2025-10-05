@@ -6,56 +6,130 @@ const { google } = require('googleapis');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+// Create email transporter
+const createTransporter = async () => {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.EMAIL,
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      refreshToken: process.env.REFRESH_TOKEN
+    }
+  });
+};
+
 exports.signup = async (req, res) => {
     try {
         const { name, email } = req.body;
+        
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
         const user = new User({ name, email });
         await user.save();
+
+        // Send welcome email
+        try {
+            const transporter = await createTransporter();
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: email,
+                subject: 'Welcome to StockBud 🚀',
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #4F46E5; text-align: center;">Welcome to StockBud!</h2>
+                        <p>Hello ${name},</p>
+                        <p>We're excited to have you on board! StockBud is your AI-powered inventory management solution that will revolutionize how you handle stock.</p>
+                        <p>Stay tuned for updates as we get closer to launch!</p>
+                        <br>
+                        <p>Best regards,<br>The StockBud Team</p>
+                    </div>
+                `
+            };
+
+            await transporter.sendMail(mailOptions);
+            console.log('Welcome email sent to:', email);
+        } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+            // Don't fail the signup if email fails
+        }
+
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
+        console.error('Signup error:', error);
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'User already exists with this email' });
+        }
         res.status(500).json({ message: error.message });
     }
 };
 
 exports.getUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().sort({ createdAt: -1 });
         res.status(200).json(users);
     } catch (error) {
+        console.error('Get users error:', error);
         res.status(500).json({ message: error.message });
     }
 };
 
 exports.sendEmail = async (req, res) => {
     try {
-        const { message } = req.body;
-        const users = await User.find();
-        const emails = users.map(user => user.email);
+        const { message, emails, sendToAll = false } = req.body;
 
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                type: 'OAuth2',
-                user: process.env.EMAIL,
-                clientId: process.env.CLIENT_ID,
-                clientSecret: process.env.CLIENT_SECRET,
-                refreshToken: process.env.REFRESH_TOKEN,
-                accessToken: req.headers.authorization.split(' ')[1]
-            }
-        });
+        let recipientEmails = emails || [];
+
+        // If sendToAll is true, get all user emails
+        if (sendToAll) {
+            const allUsers = await User.find({}, 'email');
+            recipientEmails = allUsers.map(user => user.email);
+        }
+
+        if (!recipientEmails || recipientEmails.length === 0) {
+            return res.status(400).json({ message: 'No recipients selected' });
+        }
+
+        if (!message || message.trim().length === 0) {
+            return res.status(400).json({ message: 'Message cannot be empty' });
+        }
+
+        const transporter = await createTransporter();
 
         const mailOptions = {
-            from: process.env.EMAIL,
-            to: emails.join(','),
-            subject: 'Message from Admin',
-            text: message
+            from: `"StockBud Admin" <${process.env.EMAIL}>`,
+            to: recipientEmails.join(','),
+            subject: 'Important Update from StockBud',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h2 style="color: #4F46E5; margin: 0;">StockBud Update</h2>
+                    </div>
+                    <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #4F46E5;">
+                        ${message.replace(/\n/g, '<br>')}
+                    </div>
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #6b7280;">
+                        <p>This email was sent from StockBud Admin Panel</p>
+                        <p>If you have any questions, please contact our support team.</p>
+                    </div>
+                </div>
+            `
         };
 
         await transporter.sendMail(mailOptions);
 
-        res.status(200).json({ message: 'Email sent successfully' });
+        res.status(200).json({ 
+            message: `Email sent successfully to ${recipientEmails.length} recipients`,
+            recipients: recipientEmails.length
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Send email error:', error);
+        res.status(500).json({ message: 'Failed to send email: ' + error.message });
     }
 };
 
