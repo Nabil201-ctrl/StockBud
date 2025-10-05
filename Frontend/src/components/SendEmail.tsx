@@ -20,7 +20,8 @@ export default function SendEmail() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users', {
+        const url = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${url}/api/users`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -96,7 +97,8 @@ export default function SendEmail() {
     }
 
     try {
-      const response = await fetch('/api/send-email', {
+      const url = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${url}/api/send-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

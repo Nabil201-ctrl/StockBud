@@ -37,7 +37,8 @@ export default function StockBudLanding(): JSX.Element {
   useEffect(() => {
     const fetchTimer = async () => {
       try {
-        const response = await fetch("/api/timer");
+        const url = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${url}/api/timer`);
         const data = await response.json();
         setTargetDate(new Date().getTime() + data.timer * 1000);
       } catch (error) {
@@ -74,7 +75,8 @@ export default function StockBudLanding(): JSX.Element {
     setStatusMessage("Joining waitlist...");
 
     try {
-      const response = await fetch("/api/signup", {
+      const url = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${url}/api/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email })

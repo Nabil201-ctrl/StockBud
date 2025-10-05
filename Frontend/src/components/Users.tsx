@@ -22,7 +22,8 @@ export default function Users(): JSX.Element {
       }
       
       try {
-        const response = await fetch('/api/users', {
+        const url = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${url}/api/users`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

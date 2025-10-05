@@ -14,8 +14,8 @@ export default function AdminLogin() {
   const handleSuccess = async (credentialResponse: GoogleCredentialResponse) => {
     try {
       console.log('Google login successful, sending to backend...');
-      
-      const res = await fetch('/api/auth/google', {
+      const url = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${url}/api/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
