@@ -39,15 +39,53 @@ exports.signup = async (req, res) => {
             const mailOptions = {
                 from: process.env.EMAIL,
                 to: email,
-                subject: 'Welcome to StockBud 🚀',
+                subject: 'Welcome to StockBud 🎉',
                 html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h2 style="color: #4F46E5; text-align: center;">Welcome to StockBud!</h2>
-                        <p>Hello ${name},</p>
-                        <p>We're excited to have you on board! StockBud is your AI-powered inventory management solution that will revolutionize how you handle stock.</p>
-                        <p>Stay tuned for updates as we get closer to launch!</p>
-                        <br>
-                        <p>Best regards,<br>The StockBud Team</p>
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #333;">
+                        <p>Hi ${name},</p>
+                        
+                        <p>Welcome to StockBud 🎉 — we're excited to have you on board!</p>
+                        
+                        <p>You just joined a growing community of store owners and entrepreneurs who want smarter, simpler, and faster ways to manage their businesses.</p>
+                        
+                        <p><strong>Here's what StockBud will bring to your store:</strong></p>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin: 8px 0;">✅ <strong>Smart Inventory Management</strong> — never run out of stock unexpectedly.</li>
+                            <li style="margin: 8px 0;">✅ <strong>Customer Insights</strong> — know what your customers love buying most.</li>
+                            <li style="margin: 8px 0;">✅ <strong>AI Marketing Assistant</strong> — personalized strategies to boost your sales.</li>
+                            <li style="margin: 8px 0;">✅ <strong>Easy Reports</strong> — daily, weekly, or monthly summaries that actually make sense.</li>
+                            <li style="margin: 8px 0;">✅ <strong>Works Online & Offline</strong> — whether you run a local shop or a Shopify store.</li>
+                        </ul>
+                        
+                        <p>We built StockBud to be your business buddy — not just software.</p>
+                        
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <p style="margin: 0;">✨ <strong>What's next?</strong><br>
+                            As a waitlist member, you'll be among the first to get early access when we launch. Plus, we'll share updates, tips, and exclusive offers only for early supporters like you.</p>
+                        </div>
+                        
+                        <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <p style="margin: 0;">💡 <strong>Want to help shape StockBud?</strong><br>
+                            Reply to this email and tell us your biggest frustration with managing your store — your feedback will help us build the perfect business buddy for you.</p>
+                        </div>
+                        
+                        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
+                        
+                        <p style="color: #666; font-size: 14px;">
+                            Thank you for trusting us with your business journey.<br>
+                            Together, we'll make running your store simpler and more profitable.
+                        </p>
+                        
+                        <p>Talk soon,<br>
+                        <strong>— The StockBud Team</strong></p>
+                        
+                        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
+                        
+                        <p style="color: #666; font-size: 13px;">
+                            <strong>P.S.</strong><br>
+                            Love the idea of StockBud? Invite other business owners to join the waitlist here 👉 
+                            <a href="[Insert Waitlist Link]" style="color: #4F46E5; text-decoration: none;">[Insert Waitlist Link]</a>
+                        </p>
                     </div>
                 `
             };
@@ -68,6 +106,7 @@ exports.signup = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
 
 exports.getUsers = async (req, res) => {
     try {
