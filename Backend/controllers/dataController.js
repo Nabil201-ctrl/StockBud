@@ -6,107 +6,119 @@ const { google } = require('googleapis');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Create email transporter
+
 const createTransporter = async () => {
   return nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      type: 'OAuth2',
-      user: process.env.EMAIL,
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      refreshToken: process.env.REFRESH_TOKEN
+      user: process.env.EMAIL,  
+      pass: process.env.APP_PASSWORD  
     }
   });
 };
 
+
 exports.signup = async (req, res) => {
-    try {
-        const { name, email } = req.body;
-        
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
+  try {
+    const { name, email } = req.body;
 
-        const user = new User({ name, email });
-        await user.save();
-
-        // Send welcome email
-        try {
-            const transporter = await createTransporter();
-            const mailOptions = {
-                from: process.env.EMAIL,
-                to: email,
-                subject: 'Welcome to StockBud 🎉',
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #333;">
-                        <p>Hi ${name},</p>
-                        
-                        <p>Welcome to StockBud 🎉 — we're excited to have you on board!</p>
-                        
-                        <p>You just joined a growing community of store owners and entrepreneurs who want smarter, simpler, and faster ways to manage their businesses.</p>
-                        
-                        <p><strong>Here's what StockBud will bring to your store:</strong></p>
-                        <ul style="list-style: none; padding: 0;">
-                            <li style="margin: 8px 0;">✅ <strong>Smart Inventory Management</strong> — never run out of stock unexpectedly.</li>
-                            <li style="margin: 8px 0;">✅ <strong>Customer Insights</strong> — know what your customers love buying most.</li>
-                            <li style="margin: 8px 0;">✅ <strong>AI Marketing Assistant</strong> — personalized strategies to boost your sales.</li>
-                            <li style="margin: 8px 0;">✅ <strong>Easy Reports</strong> — daily, weekly, or monthly summaries that actually make sense.</li>
-                            <li style="margin: 8px 0;">✅ <strong>Works Online & Offline</strong> — whether you run a local shop or a Shopify store.</li>
-                        </ul>
-                        
-                        <p>We built StockBud to be your business buddy — not just software.</p>
-                        
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                            <p style="margin: 0;">✨ <strong>What's next?</strong><br>
-                            As a waitlist member, you'll be among the first to get early access when we launch. Plus, we'll share updates, tips, and exclusive offers only for early supporters like you.</p>
-                        </div>
-                        
-                        <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                            <p style="margin: 0;">💡 <strong>Want to help shape StockBud?</strong><br>
-                            Reply to this email and tell us your biggest frustration with managing your store — your feedback will help us build the perfect business buddy for you.</p>
-                        </div>
-                        
-                        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
-                        
-                        <p style="color: #666; font-size: 14px;">
-                            Thank you for trusting us with your business journey.<br>
-                            Together, we'll make running your store simpler and more profitable.
-                        </p>
-                        
-                        <p>Talk soon,<br>
-                        <strong>— The StockBud Team</strong></p>
-                        
-                        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
-                        
-                        <p style="color: #666; font-size: 13px;">
-                            <strong>P.S.</strong><br>
-                            Love the idea of StockBud? Invite other business owners to join the waitlist here 👉 
-                            <a href="[Insert Waitlist Link]" style="color: #4F46E5; text-decoration: none;">[Insert Waitlist Link]</a>
-                        </p>
-                    </div>
-                `
-            };
-
-            await transporter.sendMail(mailOptions);
-            console.log('Welcome email sent to:', email);
-        } catch (emailError) {
-            console.error('Failed to send welcome email:', emailError);
-            // Don't fail the signup if email fails
-        }
-
-        res.status(201).json({ message: 'User created successfully' });
-    } catch (error) {
-        console.error('Signup error:', error);
-        if (error.code === 11000) {
-            return res.status(400).json({ message: 'User already exists with this email' });
-        }
-        res.status(500).json({ message: error.message });
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
     }
-};
 
+    const user = new User({ name, email });
+    await user.save();
+
+    // Send professional welcome email
+    try {
+      const transporter = await createTransporter();
+      const mailOptions = {
+        from: `"StockBud Team" <${process.env.EMAIL}>`,
+        to: email,
+        subject: `🎉 Welcome to StockBud, ${name}!`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; padding: 40px 0; color: #1f2937;">
+            <div style="max-width: 640px; margin: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); overflow: hidden;">
+              
+              <!-- Header -->
+              <div style="background: #4F46E5; color: white; text-align: center; padding: 30px 20px;">
+                <h1 style="margin: 0; font-size: 24px;">Welcome to <span style="color: #a5b4fc;">StockBud</span> 🎉</h1>
+              </div>
+              
+              <!-- Body -->
+              <div style="padding: 30px;">
+                <p style="font-size: 16px;">Hi <strong>${name}</strong>,</p>
+
+                <p style="font-size: 15px; line-height: 1.7;">
+                  We're thrilled to have you on board! You’ve just joined a community of smart business owners who are taking control of their store management with ease.
+                </p>
+
+                <p style="font-weight: 600; margin-top: 25px;">Here’s what you can look forward to with StockBud:</p>
+
+                <ul style="padding: 0; list-style: none; font-size: 15px; line-height: 1.6;">
+                  <li>✅ <strong>Smart Inventory Management</strong> – never run out of stock unexpectedly.</li>
+                  <li>✅ <strong>Customer Insights</strong> – understand what drives your sales.</li>
+                  <li>✅ <strong>AI Marketing Assistant</strong> – grow faster with smart suggestions.</li>
+                  <li>✅ <strong>Easy Reports</strong> – get clear summaries anytime.</li>
+                  <li>✅ <strong>Works Online & Offline</strong> – manage your business anywhere.</li>
+                </ul>
+
+                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 25px 0;">
+                  <p style="margin: 0; font-size: 15px;">
+                    ✨ <strong>Next Steps:</strong><br>
+                    You’re on our exclusive waitlist — we’ll notify you first when StockBud officially launches! Expect updates, insights, and early-bird offers.
+                  </p>
+                </div>
+
+                <div style="background: #eef2ff; padding: 16px; border-radius: 8px; margin: 25px 0;">
+                  <p style="margin: 0; font-size: 15px;">
+                    💡 <strong>Got a minute?</strong><br>
+                    Reply to this email and tell us your biggest store management challenge — your feedback helps shape StockBud’s features.
+                  </p>
+                </div>
+
+                <p style="font-size: 15px; color: #4b5563; line-height: 1.6;">
+                  Thank you for joining us on this journey. Together, we’ll make managing your store easier, smarter, and more rewarding.
+                </p>
+
+                <p style="margin-top: 20px; font-size: 15px;">Warm regards,<br><strong>The StockBud Team</strong></p>
+
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+
+                <p style="font-size: 13px; color: #6b7280;">
+                  <strong>P.S.</strong> Love the idea of StockBud? Invite your friends to join the waitlist:
+                  <a href="[Insert Waitlist Link]" style="color: #4F46E5; text-decoration: none;">Join Waitlist</a>
+                </p>
+              </div>
+
+              <!-- Footer -->
+              <div style="background: #f9fafb; text-align: center; padding: 15px 20px; font-size: 12px; color: #9ca3af;">
+                © ${new Date().getFullYear()} StockBud. All rights reserved.
+              </div>
+
+            </div>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+      console.log('✅ Welcome email sent to:', email);
+    } catch (emailError) {
+      console.error('❌ Failed to send welcome email:', emailError.message);
+      // Continue signup even if email fails
+    }
+
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    console.error('Signup error:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'User already exists with this email' });
+    }
+    res.status(500).json({ message: error.message });
+  }
+};
 
 exports.getUsers = async (req, res) => {
     try {

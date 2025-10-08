@@ -42,7 +42,6 @@ export default function StockBudLanding(): JSX.Element {
         const data = await response.json();
         setTargetDate(new Date().getTime() + data.timer * 1000);
       } catch (error) {
-        console.error("Error fetching timer:", error);
         // Fallback to a default date if the backend is not available
         setTargetDate(new Date("2026-01-01T00:00:00Z").getTime());
       }

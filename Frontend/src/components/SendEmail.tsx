@@ -32,7 +32,6 @@ export default function SendEmail() {
         const data = await response.json();
         setUsers(data);
       } catch (error) {
-        console.error('Error fetching users:', error);
         setStatus('Failed to load users');
       }
     };
@@ -124,7 +123,6 @@ export default function SendEmail() {
         setSelectAll(false);
       }
     } catch (err: any) {
-      console.error('Error sending email:', err);
       setStatus(`❌ ${err.message || 'Please try again later.'}`);
     } finally {
       setIsLoading(false);

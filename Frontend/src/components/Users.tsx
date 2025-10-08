@@ -36,7 +36,7 @@ export default function Users(): JSX.Element {
         const data: User[] = await response.json();
         setUsers(data);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        /* console.error('Error fetching users:', error); */
       } finally {
         setLoading(false);
       }
