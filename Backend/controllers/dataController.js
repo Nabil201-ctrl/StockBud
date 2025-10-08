@@ -89,7 +89,7 @@ exports.signup = async (req, res) => {
 
                 <p style="font-size: 13px; color: #6b7280;">
                   <strong>P.S.</strong> Love the idea of StockBud? Invite your friends to join the waitlist:
-                  <a href="[Insert Waitlist Link]" style="color: #4F46E5; text-decoration: none;">Join Waitlist</a>
+                  <a href="https://stock-bud.vercel.app/" style="color: #4F46E5; text-decoration: none;">Join Waitlist</a>
                 </p>
               </div>
 
