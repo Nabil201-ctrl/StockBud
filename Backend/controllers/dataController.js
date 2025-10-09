@@ -8,25 +8,22 @@ dotenv.config();
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Fixed email transporter function
+// Render-compatible email transporter
 const createEmailTransporter = () => {
   try {
-    console.log('📧 Creating email transporter...');
-    console.log('Email user:', process.env.EMAIL ? '✓ Set' : '✗ Not set');
-    console.log('App password:', process.env.APP_PASSWORD ? '✓ Set' : '✗ Not set');
+    console.log('📧 Creating email transporter for Render...');
     
+    // Use Render's SMTP service or alternative configuration
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      requireTLS: true,
+      port: 465, // Use SSL port instead of 587
+      secure: true, // Use SSL
       auth: {
         user: process.env.EMAIL,
         pass: process.env.APP_PASSWORD
       },
-      connectionTimeout: 30000,
-      greetingTimeout: 30000,
-      socketTimeout: 45000,
+      connectionTimeout: 10000, // Shorter timeout for Render
+      socketTimeout: 10000,
       debug: true,
       logger: true
     });
@@ -39,21 +36,32 @@ const createEmailTransporter = () => {
   }
 };
 
-// Test email connection on startup
+// Quick connection test with shorter timeout
 const testEmailConnection = async () => {
   try {
     const transporter = createEmailTransporter();
-    await transporter.verify();
+    // Use a shorter timeout for testing
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Test timeout')), 5000)
+    );
+    
+    await Promise.race([transporter.verify(), timeoutPromise]);
     console.log('✅ Email connection test passed');
     return true;
   } catch (error) {
-    console.error('❌ Email connection test failed:', error.message);
-    return false;
+    console.log('ℹ️ Email connection test skipped (expected on Render):', error.message);
+    return false; // Don't fail the app, just continue
   }
 };
 
-// Run email test on module load
-testEmailConnection();
+// Test email (non-blocking)
+testEmailConnection().then(success => {
+  if (success) {
+    console.log('🚀 Email service ready');
+  } else {
+    console.log('⚠️ Email service may not work on this environment');
+  }
+});
 
 exports.signup = async (req, res) => {
   try {
@@ -73,100 +81,100 @@ exports.signup = async (req, res) => {
     const user = new User({ name, email });
     await user.save();
 
-    // Send welcome email with enhanced error handling
-    let emailSent = false;
-    try {
-      console.log(`📧 Attempting to send welcome email to: ${email}`);
-      
-      const transporter = createEmailTransporter();
-      
-      // Verify connection before sending
-      await transporter.verify();
-      console.log('✅ SMTP connection verified');
+    // Send welcome email (non-blocking with error handling)
+    (async () => {
+      try {
+        console.log(`📧 Attempting to send welcome email to: ${email}`);
+        
+        const transporter = createEmailTransporter();
+        
+        const mailOptions = {
+          from: `"StockBud Team" <${process.env.EMAIL}>`,
+          to: email,
+          subject: `🎉 Welcome to StockBud, ${name}!`,
+          html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; padding: 40px 0; color: #1f2937;">
+              <div style="max-width: 640px; margin: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); overflow: hidden;">
+                
+                <!-- Header -->
+                <div style="background: #4F46E5; color: white; text-align: center; padding: 30px 20px;">
+                  <h1 style="margin: 0; font-size: 24px;">Welcome to <span style="color: #a5b4fc;">StockBud</span> 🎉</h1>
+                </div>
+                
+                <!-- Body -->
+                <div style="padding: 30px;">
+                  <p style="font-size: 16px;">Hi <strong>${name}</strong>,</p>
 
-      const mailOptions = {
-        from: `"StockBud Team" <${process.env.EMAIL}>`,
-        to: email,
-        subject: `🎉 Welcome to StockBud, ${name}!`,
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; padding: 40px 0; color: #1f2937;">
-            <div style="max-width: 640px; margin: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); overflow: hidden;">
-              
-              <!-- Header -->
-              <div style="background: #4F46E5; color: white; text-align: center; padding: 30px 20px;">
-                <h1 style="margin: 0; font-size: 24px;">Welcome to <span style="color: #a5b4fc;">StockBud</span> 🎉</h1>
-              </div>
-              
-              <!-- Body -->
-              <div style="padding: 30px;">
-                <p style="font-size: 16px;">Hi <strong>${name}</strong>,</p>
+                  <p style="font-size: 15px; line-height: 1.7;">
+                    We're thrilled to have you on board! You've just joined a community of smart business owners who are taking control of their store management with ease.
+                  </p>
 
-                <p style="font-size: 15px; line-height: 1.7;">
-                  We're thrilled to have you on board! You've just joined a community of smart business owners who are taking control of their store management with ease.
-                </p>
+                  <p style="font-weight: 600; margin-top: 25px;">Here's what you can look forward to with StockBud:</p>
 
-                <p style="font-weight: 600; margin-top: 25px;">Here's what you can look forward to with StockBud:</p>
+                  <ul style="padding: 0; list-style: none; font-size: 15px; line-height: 1.6;">
+                    <li>✅ <strong>Smart Inventory Management</strong> – never run out of stock unexpectedly.</li>
+                    <li>✅ <strong>Customer Insights</strong> – understand what drives your sales.</li>
+                    <li>✅ <strong>AI Marketing Assistant</strong> – grow faster with smart suggestions.</li>
+                    <li>✅ <strong>Easy Reports</strong> – get clear summaries anytime.</li>
+                    <li>✅ <strong>Works Online & Offline</strong> – manage your business anywhere.</li>
+                  </ul>
 
-                <ul style="padding: 0; list-style: none; font-size: 15px; line-height: 1.6;">
-                  <li>✅ <strong>Smart Inventory Management</strong> – never run out of stock unexpectedly.</li>
-                  <li>✅ <strong>Customer Insights</strong> – understand what drives your sales.</li>
-                  <li>✅ <strong>AI Marketing Assistant</strong> – grow faster with smart suggestions.</li>
-                  <li>✅ <strong>Easy Reports</strong> – get clear summaries anytime.</li>
-                  <li>✅ <strong>Works Online & Offline</strong> – manage your business anywhere.</li>
-                </ul>
+                  <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 25px 0;">
+                    <p style="margin: 0; font-size: 15px;">
+                      ✨ <strong>Next Steps:</strong><br>
+                      You're on our exclusive waitlist — we'll notify you first when StockBud officially launches! Expect updates, insights, and early-bird offers.
+                    </p>
+                  </div>
 
-                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 25px 0;">
-                  <p style="margin: 0; font-size: 15px;">
-                    ✨ <strong>Next Steps:</strong><br>
-                    You're on our exclusive waitlist — we'll notify you first when StockBud officially launches! Expect updates, insights, and early-bird offers.
+                  <div style="background: #eef2ff; padding: 16px; border-radius: 8px; margin: 25px 0;">
+                    <p style="margin: 0; font-size: 15px;">
+                      💡 <strong>Got a minute?</strong><br>
+                      Reply to this email and tell us your biggest store management challenge — your feedback helps shape StockBud's features.
+                    </p>
+                  </div>
+
+                  <p style="font-size: 15px; color: #4b5563; line-height: 1.6;">
+                    Thank you for joining us on this journey. Together, we'll make managing your store easier, smarter, and more rewarding.
+                  </p>
+
+                  <p style="margin-top: 20px; font-size: 15px;">Warm regards,<br><strong>The StockBud Team</strong></p>
+
+                  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+
+                  <p style="font-size: 13px; color: #6b7280;">
+                    <strong>P.S.</strong> Love the idea of StockBud? Invite your friends to join the waitlist:
+                    <a href="https://stock-bud.vercel.app/" style="color: #4F46E5; text-decoration: none;">Join Waitlist</a>
                   </p>
                 </div>
 
-                <div style="background: #eef2ff; padding: 16px; border-radius: 8px; margin: 25px 0;">
-                  <p style="margin: 0; font-size: 15px;">
-                    💡 <strong>Got a minute?</strong><br>
-                    Reply to this email and tell us your biggest store management challenge — your feedback helps shape StockBud's features.
-                  </p>
+                <!-- Footer -->
+                <div style="background: #f9fafb; text-align: center; padding: 15px 20px; font-size: 12px; color: #9ca3af;">
+                  © ${new Date().getFullYear()} StockBud. All rights reserved.
                 </div>
 
-                <p style="font-size: 15px; color: #4b5563; line-height: 1.6;">
-                  Thank you for joining us on this journey. Together, we'll make managing your store easier, smarter, and more rewarding.
-                </p>
-
-                <p style="margin-top: 20px; font-size: 15px;">Warm regards,<br><strong>The StockBud Team</strong></p>
-
-                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-
-                <p style="font-size: 13px; color: #6b7280;">
-                  <strong>P.S.</strong> Love the idea of StockBud? Invite your friends to join the waitlist:
-                  <a href="https://stock-bud.vercel.app/" style="color: #4F46E5; text-decoration: none;">Join Waitlist</a>
-                </p>
               </div>
-
-              <!-- Footer -->
-              <div style="background: #f9fafb; text-align: center; padding: 15px 20px; font-size: 12px; color: #9ca3af;">
-                © ${new Date().getFullYear()} StockBud. All rights reserved.
-              </div>
-
             </div>
-          </div>
-        `
-      };
+          `
+        };
 
-      await transporter.sendMail(mailOptions);
-      console.log('✅ Welcome email sent successfully to:', email);
-      emailSent = true;
-      
-    } catch (emailError) {
-      console.error('❌ Failed to send welcome email:', emailError.message);
-      console.error('Email error details:', emailError);
-      emailSent = false;
-      // Don't throw error - continue with user creation
-    }
+        // Send email with timeout
+        const sendPromise = transporter.sendMail(mailOptions);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Email send timeout')), 10000)
+        );
+
+        await Promise.race([sendPromise, timeoutPromise]);
+        console.log('✅ Welcome email sent successfully to:', email);
+        
+      } catch (emailError) {
+        console.error('❌ Failed to send welcome email:', emailError.message);
+        // Don't throw - just log the error
+      }
+    })(); // Immediately invoked async function
 
     res.status(201).json({ 
       message: 'User created successfully',
-      emailSent: emailSent
+      note: 'Welcome email is being sent in background'
     });
     
   } catch (error) {
@@ -210,7 +218,6 @@ exports.sendEmail = async (req, res) => {
 
     try {
       const transporter = createEmailTransporter();
-      await transporter.verify(); // Verify connection first
 
       const mailOptions = {
         from: `"StockBud Admin" <${process.env.EMAIL}>`,
@@ -232,7 +239,13 @@ exports.sendEmail = async (req, res) => {
         `
       };
 
-      await transporter.sendMail(mailOptions);
+      // Send with timeout
+      const sendPromise = transporter.sendMail(mailOptions);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Email send timeout')), 10000)
+      );
+
+      await Promise.race([sendPromise, timeoutPromise]);
 
       res.status(200).json({ 
         message: `Email sent successfully to ${recipientEmails.length} recipients`,
@@ -253,19 +266,10 @@ exports.googleAuth = async (req, res) => {
   const { token } = req.body;
   
   try {
-    // Debug: Check environment variables
-    console.log('=== ENVIRONMENT VARIABLES IN CONTROLLER ===');
-    console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? '✓ Set' : '✗ Not set');
-    console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL ? '✓ Set: ' + process.env.ADMIN_EMAIL : '✗ Not set');
-    console.log('JWT_SECRET:', process.env.JWT_SECRET ? '✓ Set' : '✗ Not set');
-    console.log('==========================================');
-
     // Check if token is provided
     if (!token) {
       return res.status(400).json({ message: 'No token provided' });
     }
-
-    console.log('Received token for verification');
 
     const ticket = await client.verifyIdToken({
       idToken: token,
@@ -274,51 +278,32 @@ exports.googleAuth = async (req, res) => {
     
     const payload = ticket.getPayload();
     
-    // Check if payload exists and has required fields
     if (!payload) {
       return res.status(400).json({ message: 'Invalid token payload' });
     }
 
     const { name, email, sub } = payload;
 
-    // Validate required fields
     if (!email) {
-      console.error('Email not found in Google payload:', payload);
       return res.status(400).json({ message: 'Email not provided by Google' });
     }
 
-    console.log('Google auth successful - User email:', email);
-
-    // Safe email comparison with environment variable
     const normalizedEmail = email.toLowerCase().trim();
     
-    // Check if ADMIN_EMAIL is defined in environment
+    // Check admin status
     let isAdmin = false;
-    if (!process.env.ADMIN_EMAIL) {
-      console.error('ADMIN_EMAIL environment variable is not set!');
-      // Fallback to hardcoded email for now
+    if (process.env.ADMIN_EMAIL) {
+      const adminEmail = process.env.ADMIN_EMAIL.toLowerCase().trim();
+      isAdmin = normalizedEmail === adminEmail;
+    } else {
+      // Fallback
       const adminEmails = ['abubakar.nabil.210@gmail.com'];
       isAdmin = adminEmails.some(adminEmail => 
         adminEmail.toLowerCase().trim() === normalizedEmail
       );
-      console.log('Using fallback admin check:', { normalizedEmail, isAdmin });
-    } else {
-      // Use the environment variable
-      const adminEmail = process.env.ADMIN_EMAIL.toLowerCase().trim();
-      isAdmin = normalizedEmail === adminEmail;
-      console.log('Using environment variable admin check:', { 
-        normalizedEmail, 
-        adminEmail, 
-        isAdmin 
-      });
     }
     
     let user = await User.findOne({ email: normalizedEmail });
-
-    console.log('User found in database:', user ? 'Yes' : 'No');
-    if (user) {
-      console.log('Current user admin status:', user.isAdmin);
-    }
 
     if (!user) {
       user = new User({ 
@@ -328,19 +313,10 @@ exports.googleAuth = async (req, res) => {
         isAdmin 
       });
       await user.save();
-      console.log('New user created with admin status:', isAdmin);
     } else {
-      // Update isAdmin status if it changed
       if (user.isAdmin !== isAdmin) {
-        console.log('Updating user admin status from', user.isAdmin, 'to', isAdmin);
         user.isAdmin = isAdmin;
-        await user.save();
-        console.log('User admin status updated successfully');
-      } else {
-        console.log('User admin status unchanged:', isAdmin);
       }
-      
-      // Also update other fields that might have changed
       user.name = name || user.name;
       user.googleId = sub;
       await user.save();
@@ -357,8 +333,6 @@ exports.googleAuth = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    console.log('Final response - User isAdmin:', user.isAdmin);
-
     res.status(200).json({ 
       user: {
         _id: user._id,
@@ -370,9 +344,8 @@ exports.googleAuth = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Google auth error details:', error);
+    console.error('Google auth error:', error);
     
-    // More specific error messages
     if (error.message.includes('Token used too late')) {
       return res.status(400).json({ message: 'Token has expired. Please try again.' });
     }
@@ -384,14 +357,14 @@ exports.googleAuth = async (req, res) => {
   }
 };
 
-// Updated timer for 160 days (in seconds)
+// Timer for 160 days
 exports.getTimer = (req, res) => {
   const days = 160;
-  const timerInSeconds = days * 24 * 60 * 60; // 160 days in seconds
+  const timerInSeconds = days * 24 * 60 * 60;
   
   res.status(200).json({ 
     timer: timerInSeconds,
     days: days,
-    message: `Timer set to ${days} days (${timerInSeconds} seconds)`
+    message: `Timer set to ${days} days`
   });
 };
