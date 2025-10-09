@@ -3,6 +3,10 @@ const User = require('../model/user');
 const { OAuth2Client } = require('google-auth-library');
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
