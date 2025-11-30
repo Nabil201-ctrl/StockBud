@@ -15,12 +15,12 @@ const createEmailTransporter = () => {
     
     // Use Render's SMTP service or alternative configuration
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: 'smtp.zoho.com',
       port: 465, // Use SSL port instead of 587
       secure: true, // Use SSL
       auth: {
-        user: process.env.EMAIL,
-        pass: process.env.APP_PASSWORD
+        user: process.env.ZOHO_SMTP_USER,
+        pass: process.env.ZOHO_SMTP_PASSWORD
       },
       connectionTimeout: 10000, // Shorter timeout for Render
       socketTimeout: 10000,
@@ -112,11 +112,11 @@ exports.signup = async (req, res) => {
                   <p style="font-weight: 600; margin-top: 25px;">Here's what you can look forward to with StockBud:</p>
 
                   <ul style="padding: 0; list-style: none; font-size: 15px; line-height: 1.6;">
-                    <li>✅ <strong>Smart Inventory Management</strong> – never run out of stock unexpectedly.</li>
-                    <li>✅ <strong>Customer Insights</strong> – understand what drives your sales.</li>
-                    <li>✅ <strong>AI Marketing Assistant</strong> – grow faster with smart suggestions.</li>
-                    <li>✅ <strong>Easy Reports</strong> – get clear summaries anytime.</li>
-                    <li>✅ <strong>Works Online & Offline</strong> – manage your business anywhere.</li>
+                    <li><strong>Smart Inventory Management</strong> – never run out of stock unexpectedly.</li>
+                    <li><strong>Customer Insights</strong> – understand what drives your sales.</li>
+                    <li><strong>AI Marketing Assistant</strong> – grow faster with smart suggestions.</li>
+                    <li><strong>Easy Reports</strong> – get clear summaries anytime.</li>
+                    <li><strong>Works Online & Offline</strong> – manage your business anywhere.</li>
                   </ul>
 
                   <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 25px 0;">
@@ -126,25 +126,11 @@ exports.signup = async (req, res) => {
                     </p>
                   </div>
 
-                  <div style="background: #eef2ff; padding: 16px; border-radius: 8px; margin: 25px 0;">
-                    <p style="margin: 0; font-size: 15px;">
-                      💡 <strong>Got a minute?</strong><br>
-                      Reply to this email and tell us your biggest store management challenge — your feedback helps shape StockBud's features.
-                    </p>
-                  </div>
-
                   <p style="font-size: 15px; color: #4b5563; line-height: 1.6;">
                     Thank you for joining us on this journey. Together, we'll make managing your store easier, smarter, and more rewarding.
                   </p>
 
                   <p style="margin-top: 20px; font-size: 15px;">Warm regards,<br><strong>The StockBud Team</strong></p>
-
-                  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-
-                  <p style="font-size: 13px; color: #6b7280;">
-                    <strong>P.S.</strong> Love the idea of StockBud? Invite your friends to join the waitlist:
-                    <a href="https://stock-bud.vercel.app/" style="color: #4F46E5; text-decoration: none;">Join Waitlist</a>
-                  </p>
                 </div>
 
                 <!-- Footer -->
